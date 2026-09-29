@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pong</title>
+
+    <style>
+        body {
+            background-color: #111;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            background-color: black;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Pong</h1>
+    <p>Jugador: W / S | Computadora automática</p>
+
+    <canvas id="juego" width="800" height="400"></canvas>
+
+    <script>
+
+        // Obtenemos el canvas
+        const canvas = document.getElementById("juego");
+        const ctx = canvas.getContext("2d");
+
+        // Paleta del jugador
+        let jugador = {
+            x: 20,
+            y: 150,
+            ancho: 10,
+            alto: 100,
+            velocidad: 6
+        };
+
+        // Paleta de la computadora
+        let computadora = {
+            x: 770,
+            y: 150,
+            ancho: 10,
+            alto: 100
+        };
+
+        // Pelota
+        let pelota = {
+            x: 400,
+            y: 200,
+            radio: 10,
+            velocidadX: 5,
+            velocidadY: 4
+        };
+
+        // Teclas presionadas
+        let teclas = {};
+
+        document.addEventListener("keydown", function(event) {
+            teclas[event.key.toLowerCase()] = true;
+        });
+
+        document.addEventListener("keyup", function(event) {
+            teclas[event.key.toLowerCase()] = false;
+        });
+
+
+        // Dibujar rectángulo
+        function dibujarRectangulo(x, y, ancho, alto) {
+            ctx.fillStyle = "white";
+            ctx.fillRect(x, y, ancho, alto);
+        }
+
+
+        // Dibujar pelota
+        function dibujarPelota() {
+
+            ctx.beginPath();
+
+            ctx.arc(
+                pelota.x,
+                pelota.y,
+                pelota.radio,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle = "white";
+            ctx.fill();
+
+            ctx.closePath();
+        }
+
+
+        // Mover jugador
+        function moverJugador() {
+
+            if (teclas["w"] && jugador.y > 0) {
+                jugador.y -= jugador.velocidad;
+            }
+
+            if (
+                teclas["s"] &&
+                jugador.y + jugador.alto < canvas.height
+            ) {
+                jugador.y += jugador.velocidad;
+            }
+        }
+
+
+        // Mover computadora
+        function moverComputadora() {
+
+            if (
+                pelota.y <
+                computadora.y + computadora.alto / 2
+            ) {
+                computadora.y -= 3;
+            }
+
+            if (
+                pelota.y >
+                computadora.y + computadora.alto / 2
+            ) {
+                computadora.y += 3;
+            }
+        }
+
+
+        // Mover pelota
+        function moverPelota() {
+
+            pelota.x += pelota.velocidadX;
+            pelota.y += pelota.velocidadY;
+
+
+            // Rebote arriba y abajo
+            if (
+                pelota.y - pelota.radio <= 0 ||
+                pelota.y + pelota.radio >= canvas.height
+            ) {
+                pelota.velocidadY *= -1;
+            }
+
+
+            // Colisión con jugador
+            if (
+                pelota.x - pelota.radio <=
+                jugador.x + jugador.ancho &&
+
+                pelota.y >= jugador.y &&
+
+                pelota.y <=
+                jugador.y + jugador.alto
+            ) {
+                pelota.velocidadX *= -1;
+            }
+
+
+            // Colisión con computadora
+            if (
+                pelota.x + pelota.radio >=
+                computadora.x &&
+
+                pelota.y >= computadora.y &&
+
+                pelota.y <=
+                computadora.y + computadora.alto
+            ) {
+                pelota.velocidadX *= -1;
+            }
+
+
+            // Si la pelota sale de la pantalla
+            if (
+                pelota.x < 0 ||
+                pelota.x > canvas.width
+            ) {
+                reiniciarPelota();
+            }
+        }
+
+
+        // Reiniciar pelota
+        function reiniciarPelota() {
+
+            pelota.x = canvas.width / 2;
+            pelota.y = canvas.height / 2;
+
+            pelota.velocidadX *= -1;
+        }
+
+
+        // Dibujar todo
+        function dibujar() {
+
+            // Limpiar pantalla
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+            // Línea central
+            ctx.fillStyle = "white";
+
+            ctx.fillRect(
+                canvas.width / 2 - 2,
+                0,
+                4,
+                canvas.height
+            );
+
+
+            dibujarRectangulo(
+                jugador.x,
+                jugador.y,
+                jugador.ancho,
+                jugador.alto
+            );
+
+
+            dibujarRectangulo(
+                computadora.x,
+                computadora.y,
+                computadora.ancho,
+                computadora.alto
+            );
+
+
+            dibujarPelota();
+        }
+
+
+        // Bucle principal del juego
+        function juego() {
+
+            moverJugador();
+
+            moverComputadora();
+
+            moverPelota();
+
+            dibujar();
+
+            requestAnimationFrame(juego);
+        }
+
+
+        // Iniciar juego
+        juego();
+
+    </script>
+
+</body>
+</html>
